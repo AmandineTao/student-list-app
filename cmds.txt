@@ -1,0 +1,64 @@
+docker run -d --network pozos --name test-api-pozos -v ${PWD}/student_age.json:/data/student_age.json  -p 4000:5000 api-pozos:1
+
+curl -u toto:python -X GET http://10.0.1.3:4000/pozos/api/v1.0/get_student_ages
+
+
+#########commands 
+
+##### 1- BUILD AND TEST 
+$ history
+    1  git clone https://github.com/diranetafen/student-list.git
+    2  cd student-list/
+    3  ls
+    4  cat simple_api/Dockerfile 
+    6  docker build -t api-pozos:1 simple_api/
+    7  docker images
+    8  docker network create pozos
+    9  docker network ls
+   10  docker ps
+   22  cd simple_api/
+   23  docker run -d --network pozos --name test-api-pozos -v ${PWD}/student_age.json:/data/student_age.json  -p 5001:5000 api-pozos:1
+   24  docker ps
+   27  curl -u toto:python -X GET http://10.0.1.3:5001/pozos/api/v1.0/get_student_ages
+   28  history
+
+
+#### 2- IaC - docker compose
+
+history
+    1  git clone https://github.com/diranetafen/student-list.git
+    2  cd student-list/simple_api/
+    3  docker build -t api-pozos:1
+    4  docker build -t api-pozos:1 .
+    5  cd ..
+    6  docker compose up -d
+    7  docker compose up -d
+    8  docker-compose ps
+    9  docker network ls
+   10  docker-compose ps
+   11  ls -al
+   12  chmod 777 website/index.php 
+   ----update line 30 of website/index.php with "$url = 'http://student-list-api-pozos-1:5000/pozos/api/v1.0/get_student_ages'"
+   13  actualiser la fenetre de l'appli ouverte sur le port 8081
+
+   15 l'appli fonctionne correctement
+
+
+   #### deploy app on docker registry
+
+   # creer le registre docker (conteneur)
+   docker run -d -p 5000:5000 --name registry-pozos --network student-list_api-pozos-network registry:2
+
+   # tager l'image 
+   docker image tag api-pozos:1 localhost:5000/api-pozos:1
+
+    CMDS for registry
+   26  docker run -d -p 5000:5000 --name registry-pozos --network student-list_api-pozos-network registry:2
+   27  docker ps -a
+   28  docker images
+   29  docker image tag api-pozos:1 localhost:5000/api-pozos:1
+   30  docker images
+   31  docker push localhost:5000/api-pozos:1
+
+   CMDS for IHM  
+docker run -d  --name registry-pozos_ihm_ui --network student-list_api-pozos -p 4002:80 -e REGISTRY_TITLE="POZOS REGISTRY" -e REGISTRY_URL=http://registry-pozos:5000 -e DELETE_IMAGES=true joxit/docker-registry-ui:static
